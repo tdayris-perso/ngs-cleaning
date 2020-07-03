@@ -1,0 +1,14 @@
+*.snakemake*
+*datasets*
+tests/qc/
+tests/raw_data/
+tests/trimmed
+tests/logs/
+tests/report.html
+tests/*.png
+tests/*.html
+*/__pycache__/*
+*.pytest_cache*
+logs/*
+tests/design.tsv
+tests/config.yaml
