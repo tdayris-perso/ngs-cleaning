@@ -1,0 +1,12 @@
+cold_storage:
+- ' '
+config: config.yaml
+design: design.tsv
+params:
+  fastp_extra: --overrepresentation_analysis
+  fastq_screen_aligner: bowtie2
+  fastq_screen_config: fastq_screen_config.tsv
+  fastq_screen_subset: 100000
+singularity_docker_image: docker://continuumio/miniconda3:4.4.10
+threads: 1
+workdir: /home/tdayris/Documents/Developments/ngs-cleaning
