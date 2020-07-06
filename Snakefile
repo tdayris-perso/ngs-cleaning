@@ -8,11 +8,11 @@ if sys.version_info < (3, 8):
 # Snakemake 5.14.0 at least is required
 snakemake.utils.min_version("5.19.3")
 
-include: "common.smk"
-include: "copy.smk"
-include: "fastp.smk"
-include: "fastq_screen.smk"
-include: "multiqc.smk"
+include: "rules/common.smk"
+include: "rules/copy.smk"
+include: "rules/fastp.smk"
+include: "rules/fastq_screen.smk"
+include: "rules/multiqc.smk"
 
 
 workdir: config["workdir"]

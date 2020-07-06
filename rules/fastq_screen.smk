@@ -8,7 +8,7 @@ rule fastq_screen:
         "Screening {wildcards.rsample}"
     params:
         subset = config["params"].get("fastq_screen_subset", 100000),
-        fastq_screen_config = config["config"].get(
+        fastq_screen_config = config["params"].get(
             "fastq_screen_config", "fastq_screen_config.tsv"
         ),
         # fastq_screen_config = {

@@ -1,6 +1,6 @@
 rule fastp_trimmer:
     input:
-        sample = unpack(fq_pairs_w)
+        unpack(fq_pairs_w)
     output:
         trimmed = [
             "fastp/trimmed/{sample}.R1.fastq.gz",
@@ -8,7 +8,7 @@ rule fastp_trimmer:
         ],
         html = report(
             "fastp/html/{sample}.fastp.html",
-            captions="../report/fastp.rst",
+            caption="../report/fastp.rst",
             category="Quality controls"
         ),
         json = temp("fastp/json/{sample}.fastp.json")

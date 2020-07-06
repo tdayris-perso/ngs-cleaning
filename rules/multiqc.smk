@@ -1,7 +1,7 @@
 rule multiqc:
     input:
         fastp_json = expand(
-            "fastp/{format}/{sample}.{format}",
+            "fastp/{format}/{sample}.fastp.{format}",
             sample=design.Sample_id,
             format=["json", "html"]
         ),
