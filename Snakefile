@@ -17,7 +17,7 @@ include: "multiqc.smk"
 
 workdir: config["workdir"]
 container: config["singularity_docker_image"]
-localrules: copy_fastq, copy_extra
+localrules: copy_fastq
 
 
 rule all:
