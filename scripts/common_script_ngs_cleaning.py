@@ -70,6 +70,50 @@ def fastq_pairs(design: pandas.DataFrame) -> Dict[str, List[str]]:
         }
 
 
+@pytest.mark.parametrize(
+    "test, expected", [
+        (
+            pandas.DataFrame(
+                {
+                    "S1": {
+                        "Sample_id": "S1",
+                        "Upstream_file": "S1.R1.fq.gz",
+                        "Downstream_file": "S1.R2.fq.gz"
+                    },
+                    "S2": {
+                        "Sample_id": "S2",
+                        "Upstream_file": "S2.R1.fq.gz",
+                        "Downstream_file": "S2.R2.fq.gz"
+                    }
+                }
+            ).T,
+            {
+                "S1": ["S1.R1.fq.gz", "S1.R2.fq.gz"],
+                "S2": ["S2.R1.fq.gz", "S2.R2.fq.gz"]
+            }
+        ),
+
+        (
+            pandas.DataFrame(
+                {
+                    "S1": {"Sample_id": "S1", "Upstream_file": "S1.R1.fq.gz"},
+                    "S2":{"Sample_id": "S2", "Upstream_file": "S2.R1.fq.gz"}
+                }
+            ).T,
+            {
+                "S1": ["S1.R1.fq.gz"],
+                "S2": ["S2.R1.fq.gz"]
+            }
+        )
+    ]
+)
+def test_fastq_pairs(test: pandas.DataFrame, expected: List[str]) -> None:
+    """
+    Test the function fastq_pairs
+    """
+    assert fastq_pairs(test) == expected
+
+
 def sample_stream(design: pandas.DataFrame) -> Dict[str, str]:
     """
     Return the name of the samples and their stream if necessary
@@ -77,10 +121,48 @@ def sample_stream(design: pandas.DataFrame) -> Dict[str, str]:
     if "Downstream_file" in design.columns.to_list():
         return  [
             f"{s}.R{r}"
-            for s in design.Sample_id,
+            for s in design.Sample_id
             for r in ["1", "2"]
         ]
     return design.Sample_id.tolist()
+
+
+@pytest.mark.parametrize(
+    "test, expected", [
+        (
+            pandas.DataFrame(
+                {
+                    "S1": {
+                        "Sample_id": "S1",
+                        "Upstream_file": "S1.R1.fq.gz",
+                        "Downstream_file": "S1.R2.fq.gz"
+                    },
+                    "S2": {
+                        "Sample_id": "S2",
+                        "Upstream_file": "S2.R1.fq.gz",
+                        "Downstream_file": "S2.R2.fq.gz"
+                    }
+                }
+            ).T,
+            ["S1.R1", "S1.R2", "S2.R1", "S2.R2"]
+        ),
+
+        (
+            pandas.DataFrame(
+                {
+                    "S1": {"Sample_id": "S1", "Upstream_file": "S1.R1.fq.gz"},
+                    "S2":{"Sample_id": "S2", "Upstream_file": "S2.R1.fq.gz"}
+                }
+            ).T,
+            ["S1", "S2"]
+        )
+    ]
+)
+def test_sample_stream(test: pandas.DataFrame, expected: List[str]) -> None:
+    """
+    Test the function fastq_pairs
+    """
+    assert sample_stream(test) == expected
 
 
 def fq_link(design: pandas.DataFrame) -> Dict[str, str]:
@@ -107,3 +189,85 @@ def fq_link(design: pandas.DataFrame) -> Dict[str, str]:
         }
 
     return fq_link_dict
+
+
+@pytest.mark.parametrize(
+    "test, expected", [
+        (
+            pandas.DataFrame(
+                {
+                    "S1": {
+                        "Sample_id": "S1",
+                        "Upstream_file": "S1.R1.fq.gz",
+                        "Downstream_file": "S1.R2.fq.gz"
+                    },
+                    "S2": {
+                        "Sample_id": "S2",
+                        "Upstream_file": "S2.R1.fq.gz",
+                        "Downstream_file": "S2.R2.fq.gz"
+                    }
+                }
+            ).T,
+            {"S1_R1.fastq.gz": "S1.R1.fq.gz", "S1_R2.fastq.gz": "S1.R2.fq.gz",
+             "S2_R1.fastq.gz": "S2.R1.fq.gz", "S2_R2.fastq.gz": "S2.R2.fq.gz"}
+        ),
+
+        (
+            pandas.DataFrame(
+                {
+                    "S1": {
+                        "Sample_id": "S1",
+                        "Upstream_file": "S1.R1.fq.gz"
+                    },
+                    "S2": {
+                        "Sample_id": "S2",
+                        "Upstream_file": "S2.R1.fq.gz"
+                    }
+                }
+            ).T,
+            {"S1.fastq.gz": "S1.R1.fq.gz",
+             "S2.fastq.gz": "S2.R1.fq.gz"}
+        ),
+
+
+        (
+            pandas.DataFrame(
+                {
+                    "S1": {
+                        "Sample_id": "S1",
+                        "Upstream_file": "/absolute/path/to/S1.R1.fq.gz"
+                    },
+                    "S2": {
+                        "Sample_id": "S2",
+                        "Upstream_file": "/absolute/path/to/S2.R1.fq.gz"
+                    }
+                }
+            ).T,
+            {"S1.fastq.gz": "/absolute/path/to/S1.R1.fq.gz",
+             "S2.fastq.gz": "/absolute/path/to/S2.R1.fq.gz"}
+        ),
+
+        (
+            pandas.DataFrame(
+                {
+                    "S1": {
+                        "Sample_id": "S1",
+                        "Upstream_file": "relative/path/to/S1.R1.fq.gz"
+                    },
+                    "S2": {
+                        "Sample_id": "S2",
+                        "Upstream_file": "relative/path/to/S2.R1.fq.gz"
+                    }
+                }
+            ).T,
+            {"S1.fastq.gz": "relative/path/to/S1.R1.fq.gz",
+             "S2.fastq.gz": "relative/path/to/S2.R1.fq.gz"}
+        ),
+
+    ]
+)
+def test_fq_link(test: pandas.DataFrame, expected: List[str]) -> None:
+    """
+    Test the function fastq_pairs
+    """
+    assert fq_link(test) == expected

@@ -44,19 +44,6 @@ def parser() -> argparse.ArgumentParser:
         " configuration file!",
     )
 
-    # Parsing positional argument
-    main_parser.add_argument(
-        "fasta",
-        help="Path to the fasta-formatted transcriptome sequence",
-        type=str,
-    )
-
-    main_parser.add_argument(
-        "gtf",
-        help="Path to GTF-formatted genome annotation",
-        type=str
-    )
-
     # Parsing optional arguments
     main_parser.add_argument(
         "--design",
@@ -98,13 +85,6 @@ def parser() -> argparse.ArgumentParser:
     )
 
     main_parser.add_argument(
-        "--fastp-extra",
-        help="Extra parameters for fastp trimmer (default: %(default)s)",
-        type=str,
-        default=""
-    )
-
-    main_parser.add_argument(
         "--fastq-screen-subset",
         help="Number of reads that FastQ Screen will use while looking for "
              "contaminations (default: %(default)s)",
@@ -126,6 +106,48 @@ def parser() -> argparse.ArgumentParser:
              "(default: %(default)s)",
         type=str,
         default="fastq_screen_config.tsv"
+    )
+
+    # Fastp options
+    fastp = main_parser.add_mutually_exclusive_group()
+    fastp.add_argument(
+        "--fastp-extra",
+        help="Extra parameters for fastp trimmer (default: %(default)s)",
+        type=str,
+        default="--overrepresentation_analysis"
+    )
+
+    fastp.add_argument(
+        "--soft-trimmer",
+        help="Use our preset for soft trimming: cut mean quality of 10 in a "
+             "window of 6 bases, allow up to 50% of bases with qualities "
+             "below 10, allow a most 7 Ns, no average quality threshold, "
+             "minimum read length of 15.",
+        action="store_true",
+        default=False
+    )
+
+    fastp.add_argument(
+        "--medium-trimmer",
+        help="Use our preset for soft trimming: Cut mean quality of 15 in a "
+             "window of 5 bases, allow 40% of bases with quality below 10, "
+             "allow up to 7 Ns, remove reads with average quality of 10, "
+             "minimum read length is 30, filter out reads with a "
+             "complexity below 10%.",
+        action="store_true",
+        default=False
+    )
+
+    fastp.add_argument(
+        "--hard-trimmer",
+        help="Use our preset for soft trimming: Remove polyG, cut mean "
+             "quality of 20 in a window of 5, remove reads with more than "
+             "30% of reads with quality below 10, remove reads with at most "
+             "5 Ns, remove reads with average quality below 15, remove reads"
+             " smaller than 30 bases, remove reads with a complexity "
+             "below 30%",
+        action="store_true",
+        default=False
     )
 
     # Logging options
@@ -180,25 +202,22 @@ def test_parse_args() -> None:
     Example:
     >>> pytest -v prepare_config.py -k test_parse_args
     """
-    options = parse_args(shlex.split("/path/to/fasta /path/to/gtf"))
+    options = parse_args(shlex.split(""))
     expected = argparse.Namespace(
-        aggregate=False,
-        cold_storage=[" "],
+        cold_storage=[' '],
         debug=False,
-        design="design.tsv",
-        fasta="/path/to/fasta",
-        gtf="/path/to/gtf",
-        libType="A",
-        no_fastqc=False,
-        no_multiqc=False,
+        design='design.tsv',
+        fastp_extra='--overrepresentation_analysis',
+        fastq_screen_aligner='bowtie2',
+        fastq_screen_config='fastq_screen_config.tsv',
+        fastq_screen_subset=100000,
+        hard_trimmer=False,
+        medium_trimmer=False,
         quiet=False,
-        salmon_index_extra="--keepDuplicates --gencode --perfectHash",
-        salmon_quant_extra=(
-            "--numBootstraps 100 --validateMappings " "--gcBias --seqBias"
-        ),
-        singularity="docker://continuumio/miniconda3:4.4.10",
+        singularity='docker://continuumio/miniconda3:4.4.10',
+        soft_trimmer=False,
         threads=1,
-        workdir=".",
+        workdir='.'
     )
     assert options == expected
 
@@ -216,6 +235,49 @@ def args_to_dict(args: argparse.ArgumentParser) -> Dict[str, Any]:
                     Dict[str, Any]      A dictionnary containing the parameters
                                         for the pipeline
     """
+    fastp_extra = args.fastp_extra
+    if args.soft_trimmer is True:
+        fastp_extra = (
+            "--cut_front "
+            "--cut_tail "
+            "--cut_window_size 6 "
+            "--cut_mean_quality 10 "
+            "--unqualified_percent_limit 50 "
+            "--n_base_limit 7 "
+            "--average_qual 0 "
+            "--length_required 15 "
+            "--overrepresentation_analysis"
+        )
+    elif args.medium_trimmer is True:
+        fastp_extra = (
+            "--cut_front "
+            "--cut_tail "
+            "--cut_window_size 5 "
+            "--cut_mean_quality 15 "
+            "--unqualified_percent_limit 40 "
+            "--n_base_limit 7 "
+            "--average_qual 10 "
+            "--length_required 30 "
+            "--low_complexity_filter "
+            "--complexity_threshold 10 "
+            "--overrepresentation_analysis"
+        )
+    elif args.hard_trimmer is True:
+        fastp_extra = (
+            "--trim_poly_g "
+            "--cut_front "
+            "--cut_tail "
+            "--cut_window_size 5 "
+            "--cut_mean_quality 20 "
+            "--unqualified_percent_limit 30 "
+            "--n_base_limit 5 "
+            "--average_qual 15 "
+            "--length_required 30 "
+            "--low_complexity_filter "
+            "--complexity_threshold 30 "
+            "--overrepresentation_analysis"
+        )
+
     result_dict = {
         "design": os.path.abspath(args.design),
         "config": os.path.abspath(os.path.join(args.workdir, "config.yaml")),
@@ -224,7 +286,7 @@ def args_to_dict(args: argparse.ArgumentParser) -> Dict[str, Any]:
         "singularity_docker_image": args.singularity,
         "cold_storage": args.cold_storage,
         "params": {
-            "fastp_extra": args.fastp_extra,
+            "fastp_extra": fastp_extra,
             "fastq_screen_subset": args.fastq_screen_subset,
             "fastq_screen_aligner": args.fastq_screen_aligner,
             "fastq_screen_config": args.fastq_screen_config
@@ -234,45 +296,94 @@ def args_to_dict(args: argparse.ArgumentParser) -> Dict[str, Any]:
     return result_dict
 
 
-def test_args_to_dict() -> None:
+@pytest.mark.parametrize(
+    "options, expected", [
+        (
+            argparse.Namespace(
+                cold_storage=[' '],
+                debug=False,
+                design='design.tsv',
+                fastp_extra='--overrepresentation_analysis',
+                fastq_screen_aligner='bowtie2',
+                fastq_screen_config='fastq_screen_config.tsv',
+                fastq_screen_subset=100000,
+                hard_trimmer=False,
+                medium_trimmer=False,
+                quiet=False,
+                singularity='docker://continuumio/miniconda3:4.4.10',
+                soft_trimmer=False,
+                threads=1,
+                workdir='.'
+            ),
+            {
+                "design": os.path.abspath('design.tsv'),
+                "config": os.path.abspath("config.yaml"),
+                "workdir": os.path.abspath("."),
+                "threads": 1,
+                "singularity_docker_image": 'docker://continuumio/miniconda3:4.4.10',
+                "cold_storage": [' '],
+                "params": {
+                    "fastp_extra": '--overrepresentation_analysis',
+                    "fastq_screen_subset": 100000,
+                    "fastq_screen_aligner": 'bowtie2',
+                    "fastq_screen_config": 'fastq_screen_config.tsv'
+                },
+            }
+        ),
+
+        (
+            argparse.Namespace(
+                cold_storage=[' '],
+                debug=False,
+                design='design.tsv',
+                fastp_extra='--overrepresentation_analysis',
+                fastq_screen_aligner='bowtie2',
+                fastq_screen_config='fastq_screen_config.tsv',
+                fastq_screen_subset=100000,
+                hard_trimmer=False,
+                medium_trimmer=True,
+                quiet=False,
+                singularity='docker://continuumio/miniconda3:4.4.10',
+                soft_trimmer=False,
+                threads=1,
+                workdir='.'
+            ),
+            {
+                "design": os.path.abspath('design.tsv'),
+                "config": os.path.abspath("config.yaml"),
+                "workdir": os.path.abspath("."),
+                "threads": 1,
+                "singularity_docker_image": 'docker://continuumio/miniconda3:4.4.10',
+                "cold_storage": [' '],
+                "params": {
+                    "fastp_extra": (
+                        "--cut_front "
+                        "--cut_tail "
+                        "--cut_window_size 5 "
+                        "--cut_mean_quality 15 "
+                        "--unqualified_percent_limit 40 "
+                        "--n_base_limit 7 "
+                        "--average_qual 10 "
+                        "--length_required 30 "
+                        "--low_complexity_filter "
+                        "--complexity_threshold 10 "
+                        "--overrepresentation_analysis"
+                    ),
+                    "fastq_screen_subset": 100000,
+                    "fastq_screen_aligner": 'bowtie2',
+                    "fastq_screen_config": 'fastq_screen_config.tsv'
+                },
+            }
+        ),
+    ]
+)
+def test_args_to_dict(options: argparse.Namespace, expected: Dict[str, Any]) -> None:
     """
     This function simply tests the args_to_dict function with expected output
 
     Example:
     >>> pytest -v prepare_config.py -k test_args_to_dict
     """
-    options = parse_args(
-        shlex.split(
-            "/path/to/fasta "
-            " /path/to/gtf "
-            "--design /path/to/design "
-            "--workdir /path/to/workdir "
-            "--threads 100 "
-            "--singularity singularity_image "
-            "--cold-storage /path/cold/one /path/cold/two "
-            "--no-fastqc "
-            "--aggregate "
-            "--salmon-index-extra ' --index-arg 1 ' "
-            "--salmon-quant-extra ' --quant-arg ok ' "
-            "--debug "
-        )
-    )
-
-    expected = {
-        "design": "/path/to/design",
-        "config": "/path/to/workdir/config.yaml",
-        "workdir": "/path/to/workdir",
-        "threads": 100,
-        "singularity_docker_image": "singularity_image",
-        "cold_storage": ["/path/cold/one", "/path/cold/two"],
-        "ref": {"fasta": "/path/to/fasta", "gtf": "/path/to/gtf"},
-        "workflow": {"fastqc": False, "multiqc": True, "aggregate": True},
-        "params": {
-            "fastp_extra": " --index-arg 1 ",
-            "salmon_quant_extra": " --quant-arg ok ",
-            "libType": "A",
-        },
-    }
     assert args_to_dict(options) == expected
 
 

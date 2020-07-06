@@ -18,13 +18,10 @@ pytest -v ./prepare_design.py
 
 Usage example:
 # Single ended reads example:
-python3.7 ./prepare_design.py tests/reads --single
+python3.8 ./prepare_design.py tests/salmon --single
 
 # Paired-end libary example:
-python3.7 ./prepare_design.py tests/reads
-
-# Search in sub-directories:
-python3.7 ./prepare_design.py tests --recursive
+python3.8 ./prepare_design.py tests/salmon
 """
 
 import argparse  # Parse command line
@@ -91,7 +88,7 @@ def test_search_fq():
     path = Path("tests/reads/")
 
     expected = list(
-        path / "{}_R{}.fastq".format(sample, stream)
+        path / "{}_R{}.fq.gz".format(sample, stream)
         for sample in ["A", "B"]
         for stream in [1, 2]
     )
@@ -158,15 +155,15 @@ def test_classify_fq():
     prefix = Path(__file__).parent.parent
     fq_list = sorted(list(search_fq(prefix / "tests" / "reads")))
     expected = {
-        "A_R1.fastq": {
-            "Sample_id": "A_R1",
-            "Upstream_file": prefix / "tests" / "reads" / "A_R1.fastq",
-            "Downstream_file": prefix / "tests" / "reads" / "A_R2.fastq",
+        "A_R1.fq.gz": {
+            "Sample_id": "A_R1.fq",
+            "Upstream_file": prefix / "tests" / "reads" / "A_R1.fq.gz",
+            "Downstream_file": prefix / "tests" / "reads" / "A_R2.fq.gz",
         },
-        "B_R1.fastq": {
-            "Sample_id": "B_R1",
-            "Upstream_file": prefix / "tests" / "reads" / "B_R1.fastq",
-            "Downstream_file": prefix / "tests" / "reads" / "B_R2.fastq",
+        "B_R1.fq.gz": {
+            "Sample_id": "B_R1.fq",
+            "Upstream_file": prefix / "tests" / "reads" / "B_R1.fq.gz",
+            "Downstream_file": prefix / "tests" / "reads" / "B_R2.fq.gz",
         },
     }
 
