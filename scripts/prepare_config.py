@@ -85,6 +85,14 @@ def parser() -> argparse.ArgumentParser:
     )
 
     main_parser.add_argument(
+        "--copy-extra",
+        help="Extra parameters for bash copy "
+             "contaminations (default: %(default)s)",
+        type=str,
+        default="--verbose"
+    )
+
+    main_parser.add_argument(
         "--fastq-screen-subset",
         help="Number of reads that FastQ Screen will use while looking for "
              "contaminations (default: %(default)s)",
@@ -205,6 +213,7 @@ def test_parse_args() -> None:
     options = parse_args(shlex.split(""))
     expected = argparse.Namespace(
         cold_storage=[' '],
+        copy_extra="--verbose",
         debug=False,
         design='design.tsv',
         fastp_extra='--overrepresentation_analysis',
@@ -286,6 +295,7 @@ def args_to_dict(args: argparse.ArgumentParser) -> Dict[str, Any]:
         "singularity_docker_image": args.singularity,
         "cold_storage": args.cold_storage,
         "params": {
+            "copy_extra": args.copy_extra,
             "fastp_extra": fastp_extra,
             "fastq_screen_subset": args.fastq_screen_subset,
             "fastq_screen_aligner": args.fastq_screen_aligner,
@@ -301,6 +311,7 @@ def args_to_dict(args: argparse.ArgumentParser) -> Dict[str, Any]:
         (
             argparse.Namespace(
                 cold_storage=[' '],
+                copy_extra="--verbose",
                 debug=False,
                 design='design.tsv',
                 fastp_extra='--overrepresentation_analysis',
@@ -323,6 +334,7 @@ def args_to_dict(args: argparse.ArgumentParser) -> Dict[str, Any]:
                 "singularity_docker_image": 'docker://continuumio/miniconda3:4.4.10',
                 "cold_storage": [' '],
                 "params": {
+                    "copy_extra": "--verbose",
                     "fastp_extra": '--overrepresentation_analysis',
                     "fastq_screen_subset": 100000,
                     "fastq_screen_aligner": 'bowtie2',
@@ -334,6 +346,7 @@ def args_to_dict(args: argparse.ArgumentParser) -> Dict[str, Any]:
         (
             argparse.Namespace(
                 cold_storage=[' '],
+                copy_extra="--verbose",
                 debug=False,
                 design='design.tsv',
                 fastp_extra='--overrepresentation_analysis',
@@ -356,6 +369,7 @@ def args_to_dict(args: argparse.ArgumentParser) -> Dict[str, Any]:
                 "singularity_docker_image": 'docker://continuumio/miniconda3:4.4.10',
                 "cold_storage": [' '],
                 "params": {
+                    "copy_extra": "--verbose",
                     "fastp_extra": (
                         "--cut_front "
                         "--cut_tail "
@@ -467,5 +481,5 @@ if __name__ == "__main__":
         main(args)
     except Exception as e:
         logging.exception("%s", e)
-        sys.exit(1)
+        raise
     sys.exit(0)

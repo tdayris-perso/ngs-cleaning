@@ -308,5 +308,5 @@ if __name__ == "__main__":
         main(args)
     except Exception as e:
         logging.exception("%s", e)
-        sys.exit(1)
+        raise
     sys.exit(0)

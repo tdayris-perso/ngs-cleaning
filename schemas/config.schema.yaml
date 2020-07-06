@@ -1,0 +1,62 @@
+$schema: "http://json-schema.org/draft-04/schema#"
+
+description: Snakemake workflow for RNASeq read count
+
+properties:
+  design:
+    type: string
+    description: Path to design file
+    default: design.tsv
+  workdir:
+    type: string
+    description: Path to working directory
+    default: .
+  threads:
+    type: integer
+    description: Maximum number of threads used
+    default: 1
+  singularity_docker_image:
+    type: string
+    description: Image used within Singularity
+    default: docker://continuumio/miniconda3:4.4.10
+  cold_storage:
+    type: array
+    description: A list of path which are not open for intensive IO process
+    default: NONE
+    items:
+      type: string
+    uniqueItems: true
+    minItems: 1
+
+params:
+  type: object
+  description: Optional arguments for each rule
+  copy_extra:
+    type: string
+    description: Extra parameters for bash cp
+    default: "--verbose --update"
+  fastp_extra:
+    type: string
+    description: Extra parameters for fastp
+    default: "--overrepresentation_analysis"
+  fastq_screen_aligner:
+    type: string
+    description: Fastq Screen mapper, either bowtie or bowtie2
+    default: "bowtie2"
+  fastq_screen_config:
+    type: string
+    description: Path to Fastq Screen configuration file
+    default: "fastq_screen_config.tsv"
+  fastq_screen_subset:
+    type: int
+    description: Number of read into which contamination is searched
+    default: 100000
+
+
+
+required:
+  - workdir
+  - threads
+  - singularity_docker_image
+  - design
+  - cold_storage
