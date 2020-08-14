@@ -48,7 +48,7 @@ def fq_pairs_w(wildcards: Any) -> List[str]:
     """
     Return the list of samples related to a given sample name
     """
-    return {"samples": fastq_pairs_dict[wildcards.sample]}
+    return {"sample": fastq_pairs_dict[wildcards.sample]}
 
 
 def get_targets(get_trimmed: bool = False,
@@ -70,7 +70,7 @@ def get_targets(get_trimmed: bool = False,
             format=["json", "html"]
         )
 
-    if get_fqscreen is True:
+    if get_fqscreen is True and config["run_fqscreen"] is True:
         targets["fastq_screen"] = expand(
             "fqscreen/{rsample}.fastq_screen.{format}",
             rsample=rsample_list,
