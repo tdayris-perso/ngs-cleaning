@@ -12,3 +12,5 @@ tests/*.html
 logs/*
 tests/design.tsv
 tests/config.yaml
+tests/fastp
+tests/multiqc
