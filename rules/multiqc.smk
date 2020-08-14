@@ -1,15 +1,19 @@
 rule multiqc:
     input:
-        fastp_json = expand(
-            "fastp/{format}/{sample}.fastp.{format}",
-            sample=design.Sample_id,
-            format=["json", "html"]
-        ),
-        fq_screen = expand(
-            "fqscreen/{rsample}.fastq_screen.{format}",
-            rsample=rsample_list,
-            format=["png", "txt"]
+        **get_targets(
+            get_fastp=True,
+            get_fqscreen=config.get("run_fqscreen", False)
         )
+        # fastp_json = expand(
+        #     "fastp/{format}/{sample}.fastp.{format}",
+        #     sample=design.Sample_id,
+        #     format=["json", "html"]
+        # ),
+        # fq_screen = expand(
+        #     "fqscreen/{rsample}.fastq_screen.{format}",
+        #     rsample=rsample_list,
+        #     format=["png", "txt"]
+        # )
     output:
         report(
             "multiqc/report.html",

@@ -93,6 +93,13 @@ def parser() -> argparse.ArgumentParser:
     )
 
     main_parser.add_argument(
+        "--run-fqscreen",
+        help="Whether to run fastq screen or not",
+        default=False,
+        action="store_true"
+    )
+
+    main_parser.add_argument(
         "--fastq-screen-subset",
         help="Number of reads that FastQ Screen will use while looking for "
              "contaminations (default: %(default)s)",
@@ -223,6 +230,7 @@ def test_parse_args() -> None:
         hard_trimmer=False,
         medium_trimmer=False,
         quiet=False,
+        run_fqscreen=False,
         singularity='docker://continuumio/miniconda3:4.4.10',
         soft_trimmer=False,
         threads=1,
@@ -294,6 +302,7 @@ def args_to_dict(args: argparse.ArgumentParser) -> Dict[str, Any]:
         "threads": args.threads,
         "singularity_docker_image": args.singularity,
         "cold_storage": args.cold_storage,
+        "run_fqscreen": args.run_fqscreen,
         "params": {
             "copy_extra": args.copy_extra,
             "fastp_extra": fastp_extra,
@@ -323,6 +332,7 @@ def args_to_dict(args: argparse.ArgumentParser) -> Dict[str, Any]:
                 quiet=False,
                 singularity='docker://continuumio/miniconda3:4.4.10',
                 soft_trimmer=False,
+                run_fqscreen=True,
                 threads=1,
                 workdir='.'
             ),
@@ -333,6 +343,7 @@ def args_to_dict(args: argparse.ArgumentParser) -> Dict[str, Any]:
                 "threads": 1,
                 "singularity_docker_image": 'docker://continuumio/miniconda3:4.4.10',
                 "cold_storage": [' '],
+                "run_fqscreen": True,
                 "params": {
                     "copy_extra": "--verbose",
                     "fastp_extra": '--overrepresentation_analysis',
@@ -355,6 +366,7 @@ def args_to_dict(args: argparse.ArgumentParser) -> Dict[str, Any]:
                 fastq_screen_subset=100000,
                 hard_trimmer=False,
                 medium_trimmer=True,
+                run_fqscreen=True,
                 quiet=False,
                 singularity='docker://continuumio/miniconda3:4.4.10',
                 soft_trimmer=False,
@@ -368,6 +380,7 @@ def args_to_dict(args: argparse.ArgumentParser) -> Dict[str, Any]:
                 "threads": 1,
                 "singularity_docker_image": 'docker://continuumio/miniconda3:4.4.10',
                 "cold_storage": [' '],
+                "run_fqscreen": True,
                 "params": {
                     "copy_extra": "--verbose",
                     "fastp_extra": (
