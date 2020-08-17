@@ -1,3 +1,7 @@
-# ngs-cleaning
+# Snakemake pipeline: ngs-cleaning
 
-Under active development, this pipeline is not intended to be used.
+This pipeline aims to clean any kind of fastq files from any kind of modern sequencing technology.
+
+Please, have a look at the [wiki](https://github.com/tdayris-perso/ngs-cleaning/wiki) for more information.
+
+![workflow](workflow.png)
